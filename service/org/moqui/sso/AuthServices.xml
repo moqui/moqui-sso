@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/service-definition-3.xsd">
+
+    <!-- SSO -->
+    <service verb="login" noun="User" type="java" location="org.moqui.sso.AuthenticationFlow" method="loginUser" authenticate="anonymous-all">
+        <description>
+            Performs a login operation on the IdP server.
+        </description>
+        <in-parameters>
+            <parameter name="authFlowId" required="true"/>
+            <parameter name="returnTo"/>
+        </in-parameters>
+    </service>
+    <service verb="handle" noun="Callback" type="java" location="org.moqui.sso.AuthenticationFlow" method="handleCallback" authenticate="anonymous-all">
+        <description>
+            Handles the login callback and logs the user in locally.
+        </description>
+    </service>
+    <service verb="logout" noun="User" type="java" location="org.moqui.sso.AuthenticationFlow" method="logoutUser" authenticate="anonymous-all">
+        <description>
+            Performs a logout operation both locally and on the IdP server.
+        </description>
+        <in-parameters>
+            <parameter name="returnTo"/>
+        </in-parameters>
+    </service>
+
+</services>

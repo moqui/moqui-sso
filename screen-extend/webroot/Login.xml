@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<screen-extend xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/xml-screen-3.xsd">
+
+    <transition name="logout">
+        <actions>
+            <set field="moquiAuthFlowExternalLogout" from="ec.web.sessionAttributes.containsKey('moquiAuthFlowExternalLogout')"/>
+            <if condition="moquiAuthFlowExternalLogout">
+                <then>
+                    <service-call name="org.moqui.sso.AuthServices.logout#User"/>
+                </then>
+                <else>
+                    <script>ec.user.logoutUser()</script>
+                </else>
+            </if>
+        </actions>
+        <conditional-response type="none">
+            <condition>
+                <expression>moquiAuthFlowExternalLogout</expression>
+            </condition>
+        </conditional-response>
+        <default-response url="/"/>
+        <error-response url="."/>
+    </transition>
+
+    <actions-extend>
+        <script>ec.artifactExecution.disableAuthz()</script>
+        <entity-find entity-name="moqui.security.sso.AuthFlow" list="authFlowList">
+            <econdition field-name="inbound" operator="not-equals" value="Y" or-null="true"/>
+            <econdition field-name="disabled" operator="not-equals" value="Y" or-null="true"/>
+            <order-by field-name="sequenceNum"/>
+        </entity-find>
+        <script>ec.artifactExecution.enableAuthz()</script>
+    </actions-extend>
+    
+</screen-extend>

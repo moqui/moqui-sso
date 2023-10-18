@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/entity-definition-3.xsd">
+
+    <entity entity-name="AuthFlow" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="authFlowTypeEnumId" type="id"/>
+        <field name="systemMessageRemoteId" type="id">
+            <description>Used for inbound authentication flows</description>
+        </field>
+        <field name="description" type="text-medium"/>
+        <field name="iconName" type="text-short"/>
+        <field name="defaultUserGroupId" type="id"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="inbound" type="text-indicator"/>
+        <field name="disabled" type="text-indicator" enable-audit-log="true"/>
+
+        <relationship type="one-nofk" related="moqui.security.sso.OauthFlow" short-alias="oauth" mutable="true">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one-nofk" related="moqui.security.sso.OidcFlow" short-alias="oidc" mutable="true">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one-nofk" related="moqui.security.sso.SamlFlow" short-alias="saml" mutable="true">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one" title="AuthFlowType" related="moqui.basic.Enumeration" short-alias="authFlowType">
+            <key-map field-name="authFlowTypeEnumId"/>
+        </relationship>
+        <relationship type="one" related="moqui.service.message.SystemMessageRemote" short-alias="systemMessageRemote">
+            <key-map field-name="systemMessageRemoteId"/>
+        </relationship>
+        <relationship type="one" related="moqui.security.UserGroup" short-alias="defaultUserGroup">
+            <key-map field-name="defaultUserGroupId"/>
+        </relationship>
+        <relationship type="many" related="moqui.security.sso.AuthFlowFieldMap" short-alias="fieldMaps">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="many" related="moqui.security.sso.AuthFlowRoleMap" short-alias="roleMaps">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+
+        <seed-data>
+            <moqui.basic.EnumerationType enumTypeId="AuthFlowType" description="Auth Flow Type"/>
+            <moqui.basic.Enumeration enumTypeId="AuthFlowType" enumId="AftOidc" description="OpenID Connect"/>
+            <moqui.basic.Enumeration enumTypeId="AuthFlowType" enumId="AftOauth" description="OAuth"/>
+            <moqui.basic.Enumeration enumTypeId="AuthFlowType" enumId="AftSaml" description="SAML"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="AuthFlowFieldMap" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="ruleSeqId" type="id" is-pk="true"/>
+        <field name="srcFieldName" type="text-medium"/>
+        <field name="dstFieldName" type="text-medium"/>
+        <field name="dstFieldExpression" type="text-medium"/>
+        <field name="mappingServiceRegisterId" type="id"/>
+
+        <relationship type="one" related="moqui.security.sso.AuthFlow">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one" related="moqui.service.ServiceRegister" short-alias="mappingServiceRegister">
+            <key-map field-name="mappingServiceRegisterId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="AuthFlowRoleMap" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="roleName" type="text-medium" is-pk="true">
+            <description>Role name in IdP server</description>
+        </field>
+        <field name="userGroupId" type="id"/>
+
+        <relationship type="one" related="moqui.security.sso.AuthFlow">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one" related="moqui.security.UserGroup">
+            <key-map field-name="userGroupId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="OauthFlow" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="clientTypeEnumId" type="id"/>
+        <field name="clientId" type="text-medium"/>
+        <field name="secret" type="text-medium"/>
+
+        <relationship type="one" related="moqui.security.sso.AuthFlow" short-alias="authFlow">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one" title="OauthClientType" related="moqui.basic.Enumeration" short-alias="clientType">
+            <key-map field-name="clientTypeEnumId"/>
+        </relationship>
+
+        <seed-data>
+            <moqui.basic.EnumerationType enumTypeId="OauthClientType" description="OAuth Client Type"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctBitBucket" description="BitBucket"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctDropBox" description="DropBox"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctFacebook" description="Facebook"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctFoursquare" description="Foursquare"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctGitHub" description="GitHub"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctGoogle" description="Google"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctLinkedIn" description="LinkedIn"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctPaypal" description="Paypal"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctTwitter" description="Twitter"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctWordPress" description="Word Press"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctYahoo" description="Yahoo"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctOauth10" description="OAuth v1.0"/>
+            <moqui.basic.Enumeration enumTypeId="OauthClientType" enumId="OctOauth20" description="OAuth v2.0"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="OidcFlow" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="clientTypeEnumId" type="id"/>
+        <field name="clientId" type="text-medium"/>
+        <field name="secret" type="text-medium"/>
+        <field name="realm" type="text-medium">
+            <description>Specific to Keycloak.</description>
+        </field>
+        <field name="baseUri" type="text-medium">
+            <description>Specific to Keycloak.</description>
+        </field>
+        <field name="discoveryUri" type="text-medium"/>
+        <field name="preferredJwsAlgorithmEnumId" type="id"/>
+        <field name="useNonce" type="text-indicator">
+            <description>
+                A nonce is String value used to associate a Client session with an ID Token, and to mitigate replay attacks.
+                Required for implicit flows.
+            </description>
+        </field>
+
+        <relationship type="one" related="moqui.security.sso.AuthFlow" short-alias="authFlow">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+        <relationship type="one" title="OidcClientType" related="moqui.basic.Enumeration" short-alias="clientType" fk-name="OIDC_CLIENT_TYPE_FK">
+            <key-map field-name="clientTypeEnumId"/>
+        </relationship>
+        <relationship type="one" title="OidcJwsAlgorithm" related="moqui.basic.Enumeration" short-alias="preferredJwsAlgorithm" fk-name="OIDC_JWS_ALG_FK">
+            <key-map field-name="preferredJwsAlgorithmEnumId"/>
+        </relationship>
+
+        <seed-data>
+            <moqui.basic.EnumerationType enumTypeId="OidcClientType" description="OpenID Connect Client Type"/>
+            <moqui.basic.Enumeration enumTypeId="OidcClientType" enumId="OctApple" description="Apple"/>
+            <moqui.basic.Enumeration enumTypeId="OidcClientType" enumId="OctAzureAd" description="Azure AD"/>
+            <moqui.basic.Enumeration enumTypeId="OidcClientType" enumId="OctGoogle" description="Google"/>
+            <moqui.basic.Enumeration enumTypeId="OidcClientType" enumId="OctKeycloak" description="Keycloak"/>
+            <moqui.basic.Enumeration enumTypeId="OidcClientType" enumId="OctOther" description="Other"/>
+
+            <moqui.basic.EnumerationType enumTypeId="OidcJwsAlgorithm" description="OpenID Connect JWS Algorithm"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaHS256" description="HMAC using SHA-256 (HS256)" optionValue="HS256"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaHS384" description="HMAC using SHA-384 (HS384)" optionValue="HS384"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaHS512" description="HMAC using SHA-512 (HS512)" optionValue="HS512"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaRS256" description="RSASSA-PKCS-v1_5 using SHA-256 (RS256)" optionValue="RS256"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaRS384" description="RSASSA-PKCS-v1_5 using SHA-384 (RS384)" optionValue="RS384"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaRS512" description="RSASSA-PKCS-v1_5 using SHA-512 (RS512)" optionValue="RS512"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaES256" description="ECDSA using P-256 curve and SHA-256 (ES256)" optionValue="ES256"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaES384" description="ECDSA using P-384 curve and SHA-384 (ES384)" optionValue="ES384"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaES512" description="ECDSA using P-521 curve and SHA-512 (ES512)" optionValue="ES512"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaPS256" description="RSASSA-PSS using SHA-256 (PS256)" optionValue="PS256"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaPS384" description="RSASSA-PSS using SHA-384 (PS384)" optionValue="PS384"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaPS512" description="RSASSA-PSS using SHA-512 (PS512)" optionValue="PS512"/>
+            <moqui.basic.Enumeration enumTypeId="OidcJwsAlgorithm" enumId="OjaEdDSA" description="EdDSA" optionValue="EdDSA"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="SamlFlow" package="moqui.security.sso">
+        <field name="authFlowId" type="id" is-pk="true"/>
+        <field name="keystoreLocation" type="text-medium"/>
+        <field name="keystorePassword" type="text-medium"/>
+        <field name="privateKeyPassword" type="text-medium"/>
+        <field name="serviceProviderEntityId" type="text-medium"/>
+        <field name="identityProviderMetadataLocation" type="text-medium"/>
+        <field name="forceAuth" type="text-indicator"/>
+        <field name="passive" type="text-indicator"/>
+
+        <relationship type="one" related="moqui.security.sso.AuthFlow" short-alias="authFlow">
+            <key-map field-name="authFlowId"/>
+        </relationship>
+    </entity>
+
+</entities>
