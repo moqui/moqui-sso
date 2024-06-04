@@ -194,9 +194,10 @@ class AuthenticationFlow {
             }
         } catch (RuntimeException e) {
             ec.logger.error("An error occurred while handling SWT login", e)
+        } finally {
+            if (!alreadyDisabled)
+                ec.artifactExecution.enableAuthz()
         }
-        if (!alreadyDisabled)
-            ec.artifactExecution.enableAuthz()
         return false
     }
 }
