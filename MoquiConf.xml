@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- No copyright or license for configuration file, details here are not considered a creative work. -->
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/moqui-conf-3.xsd">
+    <tools>
+        <tool-factory class="org.moqui.sso.MoquiSsoToolFactory" init-priority="30" disabled="false"/>
+    </tools>
+    <user-facade sso-access-token-handler-factory="MoquiSso"/>
     <screen-facade>
         <screen location="component://webroot/screen/webroot.xml">
             <subscreens-item name="sso" location="component://moqui-sso/screen/sso.xml"/>
