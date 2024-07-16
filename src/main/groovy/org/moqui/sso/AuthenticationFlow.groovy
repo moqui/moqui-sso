@@ -31,7 +31,7 @@ class AuthenticationFlow {
         // init fields required for logic
         JEEContext context = new JEEContext(ec.web.request, ec.web.response)
         JEESessionStore sessionStore = JEESessionStore.INSTANCE
-        org.moqui.sso.MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new org.moqui.sso.MoquiSecurityGrantedAccessAdapter(ec)
+        MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new MoquiSecurityGrantedAccessAdapter(ec)
         JEEHttpActionAdapter actionAdapter = JEEHttpActionAdapter.INSTANCE
 
         // store return URL
@@ -41,7 +41,7 @@ class AuthenticationFlow {
         }
 
         // init config
-        Client client = new org.moqui.sso.AuthenticationClientFactory(ec).build(authFlowId)
+        Client client = new AuthenticationClientFactory(ec).build(authFlowId)
         Config config = new Config(callbackUrl, client)
 
         // perform logic
@@ -73,7 +73,7 @@ class AuthenticationFlow {
         // init fields required for logic
         JEEContext context = new JEEContext(ec.web.request, ec.web.response)
         JEESessionStore sessionStore = JEESessionStore.INSTANCE
-        org.moqui.sso.MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new org.moqui.sso.MoquiSecurityGrantedAccessAdapter(ec)
+        MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new MoquiSecurityGrantedAccessAdapter(ec)
         JEEHttpActionAdapter actionAdapter = JEEHttpActionAdapter.INSTANCE
 
         // init config
@@ -128,7 +128,7 @@ class AuthenticationFlow {
         JEEHttpActionAdapter actionAdapter = JEEHttpActionAdapter.INSTANCE
 
         // init config
-        Config config = new Config(baseUrl + "/sso/callback", new org.moqui.sso.AuthenticationClientFactory(ec).buildAll())
+        Config config = new Config(baseUrl + "/sso/callback", new AuthenticationClientFactory(ec).buildAll())
 
         // perform logic
         try {
