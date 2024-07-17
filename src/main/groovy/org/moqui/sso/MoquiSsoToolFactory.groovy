@@ -7,6 +7,9 @@ import org.moqui.security.SingleSignOnTokenLoginHandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 class MoquiSsoToolFactory implements ToolFactory<SingleSignOnTokenLoginHandler>{
     protected final static Logger logger = LoggerFactory.getLogger(MoquiSsoToolFactory.class)
     final static String TOOL_NAME = "MoquiSso"
@@ -36,8 +39,8 @@ class MoquiSsoToolFactory implements ToolFactory<SingleSignOnTokenLoginHandler>{
 
     class SsoTokenLoginHandler implements SingleSignOnTokenLoginHandler {
         @Override
-        boolean handleSsoLoginToken(ExecutionContext ec, String ssoAccessToken, String ssoAuthFlowId) {
-            return AuthenticationFlow.handleSwtLogin(ec, ssoAccessToken, ssoAuthFlowId)
+        boolean handleSsoLoginToken(ExecutionContext ec, HttpServletRequest request, HttpServletResponse response, String ssoAccessToken, String ssoAuthFlowId) {
+            return AuthenticationFlow.handleSwtLogin(ec, request, response, ssoAccessToken, ssoAuthFlowId)
         }
     }
 }

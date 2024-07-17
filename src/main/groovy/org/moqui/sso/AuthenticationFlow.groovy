@@ -17,6 +17,9 @@ import org.pac4j.jee.context.session.JEESessionStore
 import org.pac4j.jee.http.adapter.JEEHttpActionAdapter
 import org.pac4j.saml.state.SAML2StateGenerator
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 class AuthenticationFlow {
 
     /**
@@ -154,21 +157,25 @@ class AuthenticationFlow {
         }
     }
 
-    static boolean handleSwtLogin(ExecutionContext ec, String ssoAccessToken, String ssoAuthFlowId) {
+    static boolean handleSwtLogin(ExecutionContext ec, HttpServletRequest request, HttpServletResponse response, String ssoAccessToken, String ssoAuthFlowId) {
         // init fields required for logic
-        JEEContext context = new JEEContext(ec.web.request, ec.web.response)
+        JEEContext context = new JEEContext(request, response)
         JEESessionStore sessionStore = JEESessionStore.INSTANCE
         org.moqui.sso.MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new org.moqui.sso.MoquiSecurityGrantedAccessAdapter(ec)
         JEEHttpActionAdapter actionAdapter = JEEHttpActionAdapter.INSTANCE
 
         boolean alreadyDisabled = ec.artifactExecution.disableAuthz()
         // init config
-        String baseUrl = ec.web.getWebappRootUrl(true, false)
+        URL requestUrl = new URL(request.getRequestURL().toString())
+        String baseUrl = requestUrl.getProtocol() + "://" + requestUrl.getHost() + ":" + requestUrl.getPort()
+
         Client client = null
         if (ssoAuthFlowId) {
             client = new org.moqui.sso.AuthenticationClientFactory(ec).build(ssoAuthFlowId)
-            if (client == null)
+            if (client == null) {
                 ec.message.addError("Did not find specified ssoAuthFlowId '${ssoAuthFlowId}'")
+                return false
+            }
         } else {
             List clientList = new org.moqui.sso.AuthenticationClientFactory(ec).buildAll()
             if (clientList)
