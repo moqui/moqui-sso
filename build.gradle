@@ -37,7 +37,7 @@ dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
     mavenCentral()
-    maven { url "https://build.shibboleth.net/maven/releases" }
+    maven { url = "https://build.shibboleth.net/maven/releases" }
 }
 
 // Log4J has annotation processors, disable to avoid warning
