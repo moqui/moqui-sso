@@ -54,7 +54,7 @@ class MoquiSecurityGrantedAccessAdapter implements SecurityGrantedAccessAdapter 
     }
 
     @Override
-    Object adapt(WebContext context, SessionStore sessionStore, Collection<UserProfile> profiles, Object... parameters) throws Exception {
+    Object adapt(WebContext context, SessionStore sessionStore, Collection<UserProfile> profiles) throws Exception {
         if (profiles) {
             for (UserProfile profile : profiles) {
                 if (profile.username) {

@@ -20,24 +20,10 @@ def jarBaseName = componentNode.'@name'
 def moquiDir = projectDir.parentFile.parentFile.parentFile
 def frameworkDir = file(moquiDir.absolutePath + '/framework')
 
-// to run use "gradle dependencyUpdates"
-apply plugin: 'com.github.ben-manes.versions'
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.47.0' }
-}
-dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all { ComponentSelection selection ->
-    boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/ }
-    if (rejected) selection.reject('Release candidate')
-} } }
-
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
     mavenCentral()
-    maven { url "https://build.shibboleth.net/maven/releases" }
+    maven { url = "https://build.shibboleth.net/maven/releases" }
 }
 
 // Log4J has annotation processors, disable to avoid warning
@@ -48,18 +34,18 @@ dependencies {
     implementation project(':framework')
 
     // pac4j
-    implementation 'org.pac4j:pac4j-core:5.7.1'
-    implementation 'org.pac4j:pac4j-javaee:5.7.1'
-    implementation 'org.pac4j:pac4j-oauth:5.7.1'
-    implementation 'org.pac4j:pac4j-oidc:5.7.1'
-    implementation ('org.pac4j:pac4j-saml:5.7.1') {
+    implementation 'org.pac4j:pac4j-core:6.3.1'
+    implementation 'org.pac4j:pac4j-javaee:6.3.1'
+    implementation 'org.pac4j:pac4j-oauth:6.3.1'
+    implementation 'org.pac4j:pac4j-oidc:6.3.1'
+    implementation ('org.pac4j:pac4j-saml:6.3.1') {
         exclude group: 'org.springframework'
         exclude group: 'org.bouncycastle'
     }
 
     // explicit dependencies to get newer versions
     implementation 'org.springframework:spring-core:5.3.29'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.75'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
 }
 
 // by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
@@ -73,9 +59,11 @@ jar {
     destinationDirectory = file(projectDir.absolutePath + '/lib')
     archiveBaseName = jarBaseName
 }
-task copyDependencies { doLast {
-    copy { from (configurations.runtimeClasspath - project(':framework').configurations.runtimeClasspath - project(':framework').jar.archivePath)
-        into file(projectDir.absolutePath + '/lib') }
-} }
-copyDependencies.dependsOn cleanLib
+tasks.register('copyDependencies', Copy) {
+    dependsOn cleanLib
+    from (configurations.runtimeClasspath -
+          project(':framework').configurations.runtimeClasspath -
+          project(':framework').tasks.named('jar').get().archiveFile.get().asFile)
+    into file(projectDir.absolutePath + '/lib')
+}
 jar.dependsOn copyDependencies
