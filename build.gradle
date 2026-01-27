@@ -49,7 +49,7 @@ dependencies {
 
     // pac4j
     implementation 'org.pac4j:pac4j-core:5.7.1'
-    implementation 'org.pac4j:pac4j-javaee:5.7.1'
+    implementation 'org.pac4j:pac4j-jakartaee:5.7.1'
     implementation 'org.pac4j:pac4j-oauth:5.7.1'
     implementation 'org.pac4j:pac4j-oidc:5.7.1'
     implementation ('org.pac4j:pac4j-saml:5.7.1') {
