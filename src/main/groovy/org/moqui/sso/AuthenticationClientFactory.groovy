@@ -43,6 +43,8 @@ final class AuthenticationClientFactory {
                 .condition("authFlowId", authFlowId)
                 .one()
 
+        if (authFlow == null)
+            return null
         // build client
         if ("AftOidc" == authFlow.authFlowTypeEnumId) {
             return buildOidcClient(authFlowId)

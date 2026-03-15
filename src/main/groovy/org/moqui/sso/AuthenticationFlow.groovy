@@ -4,7 +4,9 @@ import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.UserFacadeImpl
 import org.pac4j.core.authorization.authorizer.DefaultAuthorizers
 import org.pac4j.core.client.Client
+import org.pac4j.core.client.IndirectClient
 import org.pac4j.core.config.Config
+import org.pac4j.core.credentials.TokenCredentials
 import org.pac4j.core.engine.DefaultCallbackLogic
 import org.pac4j.core.engine.DefaultLogoutLogic
 import org.pac4j.core.engine.DefaultSecurityLogic
@@ -14,6 +16,9 @@ import org.pac4j.jee.context.JEEContext
 import org.pac4j.jee.context.session.JEESessionStore
 import org.pac4j.jee.http.adapter.JEEHttpActionAdapter
 import org.pac4j.saml.state.SAML2StateGenerator
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 class AuthenticationFlow {
 
@@ -150,5 +155,56 @@ class AuthenticationFlow {
             ec.logger.error("An error occurred while performing logout action", e)
             ec.web.response.sendRedirect(returnTo ?: baseUrl + "/Login")
         }
+    }
+
+    static boolean handleSwtLogin(ExecutionContext ec, HttpServletRequest request, HttpServletResponse response, String ssoAccessToken, String ssoAuthFlowId) {
+        // init fields required for logic
+        JEEContext context = new JEEContext(request, response)
+        JEESessionStore sessionStore = JEESessionStore.INSTANCE
+        org.moqui.sso.MoquiSecurityGrantedAccessAdapter securityGrantedAccessAdapter = new org.moqui.sso.MoquiSecurityGrantedAccessAdapter(ec)
+        JEEHttpActionAdapter actionAdapter = JEEHttpActionAdapter.INSTANCE
+
+        boolean alreadyDisabled = ec.artifactExecution.disableAuthz()
+        // init config
+        URL requestUrl = new URL(request.getRequestURL().toString())
+        String baseUrl = requestUrl.getProtocol() + "://" + requestUrl.getHost() + ":" + requestUrl.getPort()
+
+        Client client = null
+        if (ssoAuthFlowId) {
+            client = new org.moqui.sso.AuthenticationClientFactory(ec).build(ssoAuthFlowId)
+            if (client == null) {
+                ec.message.addError("Did not find specified ssoAuthFlowId '${ssoAuthFlowId}'")
+                return false
+            }
+        } else {
+            List clientList = new org.moqui.sso.AuthenticationClientFactory(ec).buildAll()
+            if (clientList)
+                client = clientList.get(0)
+            else
+                ec.message.addError("No AuthFlow found!")
+        }
+        if (client instanceof IndirectClient)
+            ((IndirectClient)client).setCallbackUrl(baseUrl + "/sso/callback")
+
+        TokenCredentials tokenCredentials = new TokenCredentials(ssoAccessToken)
+        UserProfile userProfile = client.getUserProfile(tokenCredentials, context, sessionStore).get()
+
+        try {
+            // handle incoming profiles
+            securityGrantedAccessAdapter.adapt(context, sessionStore, [userProfile])
+
+            // login user
+            if (userProfile.username) {
+                ((UserFacadeImpl) ec.user).internalLoginUser(userProfile.username)
+                ec.web.sessionAttributes.put("moquiAuthFlowExternalLogout", true)
+                return true
+            }
+        } catch (RuntimeException e) {
+            ec.logger.error("An error occurred while handling SWT login", e)
+        } finally {
+            if (!alreadyDisabled)
+                ec.artifactExecution.enableAuthz()
+        }
+        return false
     }
 }

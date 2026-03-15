@@ -36,13 +36,15 @@ along with this software (see the LICENSE.md file). If not, see
     </transition>
 
     <actions-extend>
-        <script>ec.artifactExecution.disableAuthz()</script>
+        <set field="alreadyDisabled" from="ec.artifactExecution.disableAuthz()"/>
         <entity-find entity-name="moqui.security.sso.AuthFlow" list="authFlowList">
             <econdition field-name="inbound" operator="not-equals" value="Y" or-null="true"/>
             <econdition field-name="disabled" operator="not-equals" value="Y" or-null="true"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
-        <script>ec.artifactExecution.enableAuthz()</script>
+        <if condition="!alreadyDisabled">
+            <script>ec.artifactExecution.enableAuthz()</script>
+        </if>
     </actions-extend>
     
 </screen-extend>
